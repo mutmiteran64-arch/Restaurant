@@ -1,0 +1,37 @@
+name: Diagnose Supabase GitHub Secrets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check repository secrets
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          echo "Checking whether the two repository secrets are injected..."
+
+          if [ -n "$SUPABASE_URL" ]; then
+            echo "VITE_SUPABASE_URL: PRESENT"
+          else
+            echo "VITE_SUPABASE_URL: MISSING"
+          fi
+
+          if [ -n "$SUPABASE_ANON_KEY" ]; then
+            echo "VITE_SUPABASE_ANON_KEY: PRESENT"
+          else
+            echo "VITE_SUPABASE_ANON_KEY: MISSING"
+          fi
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::At least one repository secret is not available."
+            exit 1
+          fi
+
+          echo "Both repository secrets are available to GitHub Actions."
